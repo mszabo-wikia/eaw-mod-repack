@@ -1,0 +1,3 @@
+The author would like to thank Alexey Skywalker for developing the original Empire At War Linux ModTool
+and documenting the underlying issues around running Empire at War on Linux.
+Empire At War Linux ModTool can be found at https://github.com/Alexeyov/Empire-at-War-Linux-Mod-Tool.

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://nfpm.goreleaser.com/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+name: "eaw-mod-repack"
+arch: "amd64"
+platform: "linux"
+version: "${VERSION}"
+maintainer: "https://github.com/mszabo-wikia"
+section: "default"
+priority: "extra"
+description: "CLI tool to automate creating repacked local copies of Star Wars: Empire at War mods"
+homepage: "https://github.com/mszabo-wikia/eaw-mod-repack"
+license: "Apache-2.0"
+contents:
+  - src: ./target/release/eaw-mod-repack
+    dst: /usr/bin/eaw-mod-repack
+rpm:
+  compression: zstd
+deb:
+  compression: zstd

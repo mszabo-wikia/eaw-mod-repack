@@ -133,15 +133,19 @@ impl<F: FileContent> MegFilePartitioner<F> {
 #[cfg(test)]
 mod tests {
     use std::{
-        io::Read,
+        collections::BTreeMap,
+        fs::{self, File},
+        io::{Cursor, Read},
         path::{Path, PathBuf},
     };
 
     use petro_meg::{
         path::MegPath,
+        reader::{FileEntry, MegReadOptions, ReadMegMeta},
         version::MegV1,
         writer::{FileContent, WriteVersion},
     };
+    use tempfile::TempDir;
 
     use crate::megfile_partitioner::MegFilePartitioner;
 
@@ -290,5 +294,105 @@ mod tests {
             192, total_file_count,
             "should put every file into a builder"
         );
+    }
+
+    fn get_meg_entry_contents(entry: &FileEntry, file: &File) -> anyhow::Result<String> {
+        let mut reader = entry.extract_from(file, &MegReadOptions::new())?;
+        let mut buf = String::new();
+        reader.read_to_string(&mut buf)?;
+
+        Ok(buf)
+    }
+
+    #[test]
+    fn should_create_meg_file_with_contents() -> anyhow::Result<()> {
+        let test_dir = TempDir::new().expect("failed to create test dir");
+        let mut partitioner = MegFilePartitioner::new("test".into());
+
+        let root = Path::new("/test/mod");
+
+        let mut input_files = BTreeMap::new();
+        input_files.insert("/test/mod/Data/Art/big.alo", "aaa");
+        input_files.insert("/test/mod/Data/Art/Textures/foo.dds", "bbb");
+
+        for (file_path, contents) in input_files {
+            partitioner
+                .insert(root, Path::new(file_path), Cursor::new(contents.as_bytes()))
+                .expect("should not fail to insert");
+        }
+
+        let output_paths = partitioner
+            .build(false, test_dir.path())
+            .expect("should successfully write the file");
+
+        assert_eq!(
+            vec![test_dir.path().join("test_1.meg")],
+            output_paths,
+            "should report correct output path"
+        );
+
+        assert_eq!(
+            1,
+            fs::read_dir(test_dir.path())?.count(),
+            "should have written just a single MEGA file"
+        );
+
+        let output_file = File::open(test_dir.path().join("test_1.meg"))?;
+        let meg_contents = MegV1.read_meg_meta(&output_file)?;
+
+        assert_eq!(
+            vec!["DATA\\ART\\BIG.ALO", "DATA\\ART\\TEXTURES\\FOO.DDS"],
+            meg_contents
+                .iter()
+                .map(&FileEntry::name)
+                .map(&MegPath::as_str)
+                .collect::<Vec<_>>(),
+            "should include both files"
+        );
+
+        assert_eq!(
+            vec!["aaa", "bbb"],
+            meg_contents
+                .iter()
+                .map(|f| get_meg_entry_contents(f, &output_file).expect("failed to read contents"))
+                .collect::<Vec<_>>(),
+            "should include valid content for both files"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_do_nothing_when_dry_run() -> anyhow::Result<()> {
+        let test_dir = TempDir::new().expect("failed to create test dir");
+        let mut partitioner = MegFilePartitioner::new("test".into());
+
+        let root = Path::new("/test/mod");
+
+        partitioner
+            .insert(
+                root,
+                Path::new("/test/mod/Data/Art/big.alo"),
+                Cursor::new("aaa".as_bytes()),
+            )
+            .expect("should not fail to insert");
+
+        let output_paths = partitioner
+            .build(true, test_dir.path())
+            .expect("should not fail");
+
+        assert_eq!(
+            vec![test_dir.path().join("test_1.meg")],
+            output_paths,
+            "should report correct output path"
+        );
+
+        assert_eq!(
+            0,
+            fs::read_dir(test_dir.path())?.count(),
+            "should have written no files"
+        );
+
+        Ok(())
     }
 }

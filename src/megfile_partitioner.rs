@@ -56,10 +56,10 @@ impl<F: FileContent> MegFilePartitioner<F> {
         let added_len = data_len + name_record_len + MegV1.file_record_size();
 
         if added_len + MegV1.header_size() > MAX_SIZE {
-            return Err(anyhow::anyhow!(
+            anyhow::bail!(
                 "{} is too large to fit into an EaW MEGA file",
                 path.display()
-            ));
+            );
         }
 
         // Add to the current MEGA file if we fit into size limits, else start a new one.

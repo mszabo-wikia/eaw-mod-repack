@@ -8,10 +8,10 @@ fn find_steam_folder(
 ) -> anyhow::Result<PathBuf> {
     if let Some(steam_folder) = steam_folder {
         if !steam_folder.is_dir() {
-            return Err(anyhow::anyhow!(
+            anyhow::bail!(
                 "--steam-library-root {} is not a valid directory",
                 steam_folder.display()
-            ));
+            );
         }
 
         return Ok(steam_folder.clone());
@@ -33,9 +33,9 @@ fn find_steam_folder(
         }
     }
 
-    Err(anyhow::anyhow!(
+    anyhow::bail!(
         "Could not find EaW installation directory. Please specify --eaw-root or --steam-library-root."
-    ))
+    )
 }
 
 /// Figure out the EaW game folder based on its explicitly given path
@@ -47,10 +47,7 @@ pub fn find_eaw_root(
 ) -> anyhow::Result<PathBuf> {
     if let Some(eaw_root) = eaw_root {
         if !eaw_root.is_dir() {
-            return Err(anyhow::anyhow!(
-                "--eaw-root {} is not a valid directory",
-                eaw_root.display()
-            ));
+            anyhow::bail!("--eaw-root {} is not a valid directory", eaw_root.display());
         }
 
         return Ok(eaw_root);
@@ -68,10 +65,10 @@ pub fn find_eaw_root(
         return Ok(eaw_steam_root);
     }
 
-    Err(anyhow::anyhow!(
+    anyhow::bail!(
         "{} is not a valid EaW installation directory. Please specify --eaw-root or --steam-library-root.",
         eaw_steam_root.display()
-    ))
+    )
 }
 
 /// Figure out the source folder of the mod to repack based on its explicitly given path
@@ -84,9 +81,7 @@ pub fn find_source_mod_folder(
 ) -> anyhow::Result<PathBuf> {
     if let Some(steam_mod_id) = steam_mod_id {
         if source_dir.is_some() {
-            return Err(anyhow::anyhow!(
-                "Only one of --steam-mod-id or --source-dir may be specified."
-            ));
+            anyhow::bail!("Only one of --steam-mod-id or --source-dir may be specified.");
         }
 
         let steam_folder = find_steam_folder(steam_folder, home_dir)?;
@@ -105,10 +100,10 @@ pub fn find_source_mod_folder(
             return Ok(steam_mod_folder);
         }
 
-        return Err(anyhow::anyhow!(
+        anyhow::bail!(
             "{} is not a valid Steam mod folder. Check your --steam-library-root and --steam-mod-id options.",
             steam_mod_folder.display()
-        ));
+        );
     }
 
     if let Some(source_dir) = source_dir {
@@ -116,15 +111,10 @@ pub fn find_source_mod_folder(
             return Ok(source_dir);
         }
 
-        return Err(anyhow::anyhow!(
-            "{} is not a valid mod folder.",
-            source_dir.display()
-        ));
+        anyhow::bail!("{} is not a valid mod folder.", source_dir.display());
     }
 
-    Err(anyhow::anyhow!(
-        "Exactly one of --steam-mod-id or --source-dir is required."
-    ))
+    anyhow::bail!("Exactly one of --steam-mod-id or --source-dir is required.")
 }
 
 #[cfg(test)]

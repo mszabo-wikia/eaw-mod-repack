@@ -92,11 +92,9 @@ fn get_core_game_paths(eaw_dir: &Path) -> anyhow::Result<HashSet<MegPathBuf>> {
     log::info!("Discovering base game files");
 
     for entry in fs::read_dir(eaw_dir.join("corruption/Data"))
-        .with_context(|| "Error while reading base game files")?
+        .context("Error while reading base game files")?
     {
-        let path = entry
-            .with_context(|| "Error while reading base game files")?
-            .path();
+        let path = entry.context("Error while reading base game files")?.path();
 
         if path.is_file()
             && path
@@ -192,24 +190,22 @@ pub fn repack_mod(
         if let Err(ref e) = res
             && e.kind() != ErrorKind::NotFound
         {
-            return res.with_context(|| "Failed to remove destination folder");
+            return res.context("Failed to remove destination folder");
         }
     }
 
     let dest_data_dir = dest_dir.join("Data");
 
     if !dry_run {
-        std::fs::create_dir_all(&dest_data_dir)
-            .with_context(|| "Failed to create destination folder")?;
+        std::fs::create_dir_all(&dest_data_dir).context("Failed to create destination folder")?;
     }
 
     let source_data_dir = source_dir.join("Data");
 
     let megfiles_xml_path = source_data_dir.join("megafiles.xml");
     let mut mega_entries = if megfiles_xml_path.is_file() {
-        let file =
-            File::open(&megfiles_xml_path).with_context(|| "Failed to open megafiles.xml")?;
-        megfiles_xml::get_entries(file).with_context(|| "Error reading megafiles.xml")?
+        let file = File::open(&megfiles_xml_path).context("Failed to open megafiles.xml")?;
+        megfiles_xml::get_entries(file).context("Error reading megafiles.xml")?
     } else {
         vec![]
     };
@@ -303,10 +299,10 @@ pub fn repack_mod(
     );
 
     if !dry_run {
-        let mut file = File::create(&dest_megafiles_xml)
-            .with_context(|| "Error while creating megafiles.xml")?;
+        let mut file =
+            File::create(&dest_megafiles_xml).context("Error while creating megafiles.xml")?;
         megfiles_xml::write_entries(&mut file, &mega_entries)
-            .with_context(|| "Error writing megafiles.xml")?;
+            .context("Error writing megafiles.xml")?;
     }
 
     Ok(())

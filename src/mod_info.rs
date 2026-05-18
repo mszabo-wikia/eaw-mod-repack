@@ -5,10 +5,10 @@ use serde_json::Value;
 
 /// Get the mod name from modinfo.json, normalized for easy use later in MEGA file paths.
 pub fn get_mod_name(source_dir: &Path) -> anyhow::Result<String> {
-    let file = File::open(source_dir.join("modinfo.json"))
-        .with_context(|| "Error while opening modinfo.json")?;
+    let file =
+        File::open(source_dir.join("modinfo.json")).context("Error while opening modinfo.json")?;
     let mod_info: Value =
-        serde_json::from_reader(file).with_context(|| "Error while reading modinfo.json")?;
+        serde_json::from_reader(file).context("Error while reading modinfo.json")?;
 
     let raw_name = mod_info["name"]
         .as_str()

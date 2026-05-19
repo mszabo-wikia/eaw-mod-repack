@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn test_get_entries() -> Result<(), Box<dyn Error>> {
-        let xml: Vec<u8> = "<?xml version=\"1.0\" encoding=\"utf8\"?>\n<Mega_Files>\n  <Info Name=\"MyMod\" Version=\"0.1.0\"/><File>Data\\Foo.meg</File>\n  <File>Data\\Bar.meg</File>\n</Mega_Files>\n".bytes().collect();
+        let xml = "<?xml version=\"1.0\" encoding=\"utf8\"?>\n<Mega_Files>\n  <Info Name=\"MyMod\" Version=\"0.1.0\"/><File>Data\\Foo.meg</File>\n  <File>Data\\Bar.meg</File>\n</Mega_Files>\n";
         let buf = Cursor::new(xml);
 
         assert_eq!(

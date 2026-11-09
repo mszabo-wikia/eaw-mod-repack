@@ -18,13 +18,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Run tests
       run: cargo test --locked
 
   clippy_check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Run Clippy
       run: cargo clippy --locked --all-targets --all-features
